@@ -9,6 +9,7 @@ import (
 	"log"
 	"strings"
 	"time"
+	"os"
 
 	"github.com/jroimartin/gocui"
 )
@@ -350,7 +351,11 @@ func layout(g *gocui.Gui) error {
 func main() {
 	var err error
 
-	projects = read(projFile)
+	if _, err := os.Stat(projFile); os.IsNotExist(err) {
+		projects = Projects{}
+	} else {
+		projects = read(projFile)
+	}
 
 	g := gocui.NewGui()
 	if err := g.Init(); err != nil {
