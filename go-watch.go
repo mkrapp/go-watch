@@ -64,7 +64,7 @@ func updateProjInfo(g *gocui.Gui, v *gocui.View) error {
 	delView(g, "proj_info")
 	maxX, maxY := g.Size()
 	if v, err := g.SetView("proj_info", maxX-51, 11, maxX-3, maxY-5); err != nil {
-		if err != gocui.ErrorUnkView {
+		if err != gocui.ErrUnknownView {
 			return err
 		}
 		fmt.Fprintln(v, current_name)
@@ -123,7 +123,7 @@ func getLine(g *gocui.Gui, v *gocui.View) error {
 	var l string
 	var err error
 
-	g.ShowCursor = false
+	g.Cursor = false
 
 	_, cy := v.Cursor()
 	if l, err = v.Line(cy); err != nil {
@@ -131,13 +131,13 @@ func getLine(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	maxX, maxY := g.Size()
-	length := 10 + len(current_name)
+	length := 13 + len(current_name)
 	if l != "" {
 		current_name = l
 		if v, err := g.SetView("msg", maxX/2-length/2, maxY/2-3, maxX/2+length/2, maxY/2+3); err != nil {
 			v.BgColor = gocui.ColorGreen
 			v.FgColor = gocui.ColorBlack
-			if err != gocui.ErrorUnkView {
+			if err != gocui.ErrUnknownView {
 				return err
 			}
 			current_proj = projects[current_name]
@@ -163,7 +163,7 @@ func delMsg(g *gocui.Gui, v *gocui.View) error {
 }
 
 func setView(g *gocui.Gui, s string) error {
-	if err := g.SetCurrentView(s); err != nil {
+	if _, err := g.SetCurrentView(s); err != nil {
 		return err
 	}
 	return nil
@@ -184,10 +184,10 @@ func saveProj(g *gocui.Gui, v *gocui.View) error {
 		init_d, _ := time.ParseDuration("0s")
 		projects[l] = Project{time.Now(), &init_d, &init_t}
 	}
-	g.ShowCursor = false
+	g.Cursor = false
 	delView(g, "save_proj")
 	delView(g, "list")
-	g.Flush()
+//	g.Flush()
 	setView(g, "list")
 	updateProjInfo(g, v)
 	return nil
@@ -197,10 +197,10 @@ func delProj(g *gocui.Gui, v *gocui.View) error {
 	if l := current_name; l != "" {
 		delete(projects, l)
 	}
-	g.ShowCursor = false
+	g.Cursor = false
 	delView(g, "del_proj")
 	delView(g, "list")
-	g.Flush()
+//	g.Flush()
 	setView(g, "list")
 
 	return nil
@@ -216,7 +216,7 @@ func removeProject(g *gocui.Gui, v *gocui.View) error {
 	var l string
 	var err error
 
-	g.ShowCursor = false
+	g.Cursor = false
 
 	_, cy := v.Cursor()
 	if l, err = v.Line(cy); err != nil {
@@ -229,7 +229,7 @@ func removeProject(g *gocui.Gui, v *gocui.View) error {
 	if l != "" {
 		if v, err := g.SetView("del_proj", maxX/2-length/2, maxY/2, maxX/2+length/2, maxY/2+2); err != nil {
 			v.BgColor = gocui.ColorRed
-			if err != gocui.ErrorUnkView {
+			if err != gocui.ErrUnknownView {
 				return err
 			}
 			fmt.Fprintln(v, "Press 'd' to delete")
@@ -240,10 +240,10 @@ func removeProject(g *gocui.Gui, v *gocui.View) error {
 }
 
 func addProject(g *gocui.Gui, v *gocui.View) error {
-	g.ShowCursor = true
+	g.Cursor = true
 	maxX, maxY := g.Size()
 	if v, err := g.SetView("save_proj", maxX/2-30, maxY/2, maxX/2+30, maxY/2+2); err != nil {
-		if err != gocui.ErrorUnkView {
+		if err != gocui.ErrUnknownView {
 			return err
 		}
 		setView(g, "save_proj")
@@ -254,7 +254,7 @@ func addProject(g *gocui.Gui, v *gocui.View) error {
 
 func quit(g *gocui.Gui, v *gocui.View) error {
 	projects.save(projFile)
-	return gocui.Quit
+	return gocui.ErrQuit
 }
 
 func keybindings(g *gocui.Gui) error {
@@ -296,14 +296,14 @@ func layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 
 	if v, err := g.SetView("info", maxX-53, 9, maxX-1, maxY-4); err != nil {
-		if err != gocui.ErrorUnkView {
+		if err != gocui.ErrUnknownView {
 			return err
 		}
 		fmt.Fprintln(v, " PROJECT INFORMATION")
 	}
 
 	if v, err := g.SetView("list", 0, 1, maxX-54, maxY-1); err != nil {
-		if err != gocui.ErrorUnkView {
+		if err != gocui.ErrUnknownView {
 			return err
 		}
 		v.Highlight = true
@@ -321,7 +321,7 @@ func layout(g *gocui.Gui) error {
 	}
 
 	if v, err := g.SetView("legend", maxX-53, 1, maxX-1, 8); err != nil {
-		if err != gocui.ErrorUnkView {
+		if err != gocui.ErrUnknownView {
 			return err
 		}
 		fmt.Fprintln(v, " KEYBINDINGS")
@@ -332,13 +332,13 @@ func layout(g *gocui.Gui) error {
 	}
 
 	if v, err := g.SetView("label", maxX-53, maxY-3, maxX-1, maxY-1); err != nil {
-		if err != gocui.ErrorUnkView {
+		if err != gocui.ErrUnknownView {
 			return err
 		}
 		fmt.Fprintln(v, " This is go-watch -- a time tracker")
 	}
 	if v, err := g.SetView("listlabel", 0, -1, 20, 1); err != nil {
-		if err != gocui.ErrorUnkView {
+		if err != gocui.ErrUnknownView {
 			return err
 		}
 		fmt.Fprintln(v, "LIST OF PROJECTS")
@@ -357,22 +357,19 @@ func main() {
 		projects = read(projFile)
 	}
 
-	g := gocui.NewGui()
-	if err := g.Init(); err != nil {
-		log.Panicln(err)
-	}
+	g, err := gocui.NewGui(gocui.OutputNormal)
 	defer g.Close()
 
-	g.SetLayout(layout)
+	g.SetManagerFunc(layout)
 	if err := keybindings(g); err != nil {
 		log.Panicln(err)
 	}
 	g.SelBgColor = gocui.ColorGreen
 	g.SelFgColor = gocui.ColorBlack
-	//g.ShowCursor = true
+	//g.Cursor = true
 
 	err = g.MainLoop()
-	if err != nil && err != gocui.Quit {
+	if err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
 	}
 }

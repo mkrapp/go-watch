@@ -1,11 +1,6 @@
 # go-watch
 A simple console-based time tracker with JSON support.
 
-Requires `gocui`:
-
-    go get github.com/jroimartin/gocui
-    
-    
 Run with
 
     go run go-watch.go
